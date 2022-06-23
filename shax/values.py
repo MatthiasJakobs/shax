@@ -1,9 +1,18 @@
-class BaseValueExtractor:
+from abc import ABC, abstractmethod
+from typing import Iterable, Union
 
-    def value_fn(self, S):
+# define coalition type
+Coalition = Union[int, Iterable[int]]
+
+
+class BaseValueExtractor(ABC):
+
+    @abstractmethod
+    def value(self, S: Coalition) -> float:
         pass
 
-    def nr_players(self):
+    @abstractmethod
+    def n_players(self) -> int:
         pass
 
 
@@ -14,8 +23,9 @@ class FeatureValueExtractor(BaseValueExtractor):
         self.X = X
         self.y = y
 
-    def nr_players(self):
+    def value(self, S: Coalition) -> float:
+        return NotImplemented
+
+    def n_players(self) -> int:
         return self.X.shape[-1]
 
-    def value_fn(self, S):
-        return super().value_fn()
