@@ -1,4 +1,4 @@
-from values import BaseValueExtractor
+from .values import BaseValueExtractor
 
 class SHAX:
 

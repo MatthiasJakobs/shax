@@ -6,6 +6,7 @@ class BaseValueExtractor:
     def nr_players(self):
         pass
 
+
 class FeatureValueExtractor(BaseValueExtractor):
 
     def __init__(self, model, X, y):

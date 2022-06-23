@@ -1,8 +1,8 @@
 import bitvec
 import numpy as np
 
-from shax import SHAX
-from values import FeatureValueExtractor
+from .shax import SHAX
+from .values import FeatureValueExtractor
 
 if __name__ == '__main__':
     model = None
