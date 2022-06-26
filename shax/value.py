@@ -10,22 +10,20 @@ import numpy as np
 class Coalition:
 
     def __init__(self, S: Union[int, Iterable[int]], total: Optional[int]=None):
-        if isinstance(S, int):
+        try:
+            # interpret as list of indices
+            self.__S = reduce(or_, [1<<i for i in S], 0)
+        except TypeError:
+            # S must be int; interpret as bitmask
             self.__S = S
-            if total is not None:
-                assert 1 << total > S, 'coalition has more player indices than `total`'
-                self.__n = total
-            else:
-                self.__n = min(1, S.bit_length())
-        elif isinstance(S, Iterable[int]):
-            S_, n = 0, 0
-            for i in S:
-                if i > 0:
-                    S_ |= 1
-                S_ <<= 1
-                n += 1
-            self.__S = S_
-            self.__n = n
+        self.__n = min(1, self.__S.bit_length()) if total is None else total
+        assert 1 << self.__n > self.__S, 'coalition has more than `total` players'
+
+    @classmethod
+    def from_bitlist(cls, S: Iterable[int]):
+            S_ = int(''.join(map(str, S))[::-1], base=2)
+            return cls(S_, len(S))
+        
 
     def containing_coalitions(self):
         """Yields all coalitions containing this coalition as a subset.
@@ -41,8 +39,13 @@ class Coalition:
                 masks.append(pow_i)
         # apply all combinations of bitmasks to this coalition
         for ms in powerset(masks):
-            S_ = reduce(or_, ms, self.__S)
-            yield Coalition(S_, total=self.__n)
+            combo = reduce(or_, ms, 0)
+            # yield both the containing coalition as well as the combined bit mask
+            yield Coalition(self.__S | combo, total=self.__n), Coalition(combo, total=self.__n)
+
+    def __sub__(self, S):
+        ones = (1 << self.__n) - 1
+        return Coalition(self.__S & (ones ^ S.__S), total=max(self.__n, S.__n))
 
     @property
     def int(self):
@@ -50,7 +53,7 @@ class Coalition:
     
     @property
     def bitstring(self):
-        return format(self.__S, f'0{self.n_players}b')
+        return format(self.__S, f'0{self.num_players}b')
 
     @property
     def bitlist(self):
@@ -60,7 +63,7 @@ class Coalition:
     
     @property
     def bitarray(self):
-        return np.asarray(self.list)
+        return np.asarray(self.bitlist)
 
     @property
     def indexlist(self):
