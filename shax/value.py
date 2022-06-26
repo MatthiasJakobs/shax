@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod, abstractproperty
-from functools import cached_property
+from functools import cached_property, reduce
+from more_itertools import powerset
+from operator import or_
 from typing import Iterable, Optional, Union
 
 import numpy as np
@@ -24,6 +26,23 @@ class Coalition:
                 n += 1
             self.__S = S_
             self.__n = n
+
+    def containing_coalitions(self):
+        """Yields all coalitions containing this coalition as a subset.
+
+        Yields:
+            Coalition: Coalition containing this coalition as a subset
+        """
+        # generate bit masks for all zero positions
+        masks = []
+        for i in range(self.__n):
+            pow_i = 1 << i
+            if (self.__S & pow_i) <= 0:
+                masks.append(pow_i)
+        # apply all combinations of bitmasks to this coalition
+        for ms in powerset(masks):
+            S_ = reduce(or_, ms, self.__S)
+            yield Coalition(S_, total=self.__n)
 
     @property
     def int(self):
